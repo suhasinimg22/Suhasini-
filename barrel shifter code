@@ -1,0 +1,46 @@
+`timescale 1ns / 1ps
+
+module barrel_shifter (
+    input  wire [7:0] data_in,   // 8-bit input data
+    input  wire [2:0] shift_amt, // 3-bit shift amount (0 to 7)
+    input  wire [1:0] mode,      // 00: Shift Left, 01: Shift Right, 10: Rotate Left, 11: Rotate Right
+    output reg  [7:0] data_out   // 8-bit shifted/rotated output
+);
+
+    always @(*) begin
+        case (mode)
+            2'b00: begin // Logical Left Shift
+                data_out = data_in << shift_amt;
+            end
+            2'b01: begin // Logical Right Shift
+                data_out = data_in >> shift_amt;
+            end
+            2'b10: begin // Rotate Left
+                case (shift_amt)
+                    3'b000: data_out = data_in;
+                    3'b001: data_out = {data_in[6:0], data_in[7]};
+                    3'b010: data_out = {data_in[5:0], data_in[7:6]};
+                    3'b011: data_out = {data_in[4:0], data_in[7:5]};
+                    3'b100: data_out = {data_in[3:0], data_in[7:4]};
+                    3'b101: data_out = {data_in[2:0], data_in[7:3]};
+                    3'b110: data_out = {data_in[1:0], data_in[7:2]};
+                    3'b111: data_out = {data_in[0],   data_in[7:1]};
+                endcase
+            end
+            2'b11: begin // Rotate Right
+                case (shift_amt)
+                    3'b000: data_out = data_in;
+                    3'b001: data_out = {data_in[0],   data_in[7:1]};
+                    3'b010: data_out = {data_in[1:0], data_in[7:2]};
+                    3'b011: data_out = {data_in[2:0], data_in[7:3]};
+                    3'b100: data_out = {data_in[3:0], data_in[7:4]};
+                    3'b101: data_out = {data_in[4:0], data_in[7:5]};
+                    3'b110: data_out = {data_in[5:0], data_in[7:6]};
+                    3'b111: data_out = {data_in[6:0], data_in[7]};
+                endcase
+            end
+            default: data_out = data_in;
+        endcase
+    end
+
+endmodule
