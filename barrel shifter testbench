@@ -1,0 +1,54 @@
+`timescale 1ns / 1ps
+
+module barrel_shifter_tb;
+
+    // Testbench signals
+    reg  [7:0] data_in;
+    reg  [2:0] shift_amt;
+    reg  [1:0] mode;
+    wire [7:0] data_out;
+
+    // Instantiate Design Under Test (DUT)
+    barrel_shifter uut (
+        .data_in(data_in),
+        .shift_amt(shift_amt),
+        .mode(mode),
+        .data_out(data_out)
+    );
+
+    initial begin
+        // Monitor outputs continuously in the console
+        $monitor("Time=%0dt | Mode=%b | In=%b | Amt=%d | Out=%b", 
+                 $time, mode, data_in, shift_amt, data_out);
+
+        // Initialize Inputs
+        data_in = 8'b11000011;
+        shift_amt = 3'd0;
+        mode = 2'b00;
+        #10;
+
+        // --- Test Case 1: Logical Left Shift ---
+        mode = 2'b00; 
+        shift_amt = 3'd1; #10; // Expected: 10000110
+        shift_amt = 3'd3; #10; // Expected: 00011000
+        
+        // --- Test Case 2: Logical Right Shift ---
+        mode = 2'b01; 
+        shift_amt = 3'd2; #10; // Expected: 00110000
+        shift_amt = 3'd4; #10; // Expected: 00001100
+
+        // --- Test Case 3: Rotate Left ---
+        data_in = 8'b10100111;
+        mode = 2'b10; 
+        shift_amt = 3'd1; #10; // Expected: 01001111
+        shift_amt = 3'd3; #10; // Expected: 00111101
+
+        // --- Test Case 4: Rotate Right ---
+        mode = 2'b11; 
+        shift_amt = 3'd2; #10; // Expected: 11101001
+        shift_amt = 3'd5; #10; // Expected: 00111101
+
+        $finish;
+    end
+
+endmodule
