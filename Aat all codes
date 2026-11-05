@@ -1,0 +1,88 @@
+module alu (
+    input  wire [3:0] a,
+    input  wire [3:0] b,
+    input  wire [2:0] opcode,
+    output reg  [3:0] result,
+    output reg        carry
+);
+
+    always @(*) begin
+        carry = 1'b0; // default carry
+        case (opcode)
+            3'b000: begin
+                {carry, result} = a + b; // Addition
+            end
+            3'b001: begin
+                result = a - b;          // Subtraction
+            end
+            3'b010: begin
+                result = a & b;          // Logical AND
+            end
+            3'b011: begin
+                result = a | b;          // Logical OR
+            end
+            3'b100: begin
+                result = a ^ b;          // Logical XOR
+            end
+            3'b101: begin
+                result = ~a;             // Logical NOT (A)
+            end
+            3'b110: begin
+                result = a << 1;         // Shift Left by 1
+            end
+            3'b111: begin
+                result = a >> 1;         // Shift Right by 1
+            end
+            default: begin
+                result = 4'b0000;
+                carry  = 1'b0;
+            end
+        endcase
+    end
+
+endmodule
+
+
+testbench
+`timescale 1ns/1ps
+
+module tb_alu;
+
+    // Inputs
+    reg [3:0] a;
+    reg [3:0] b;
+    reg [2:0] opcode;
+
+    // Outputs
+    wire [3:0] result;
+    wire       carry;
+
+    // Instantiate the Unit Under Test (UUT)
+    alu uut (
+        .a(a),
+        .b(b),
+        .opcode(opcode),
+        .result(result),
+        .carry(carry)
+    );
+
+    initial begin
+        // Monitor outputs
+        $display("Time\tOpcode\tA\tB\tResult\tCarry");
+        $monitor("%0t\t%b\t%b\t%b\t%b\t%b", $time, opcode, a, b, result, carry);
+
+        // Apply test vectors
+        a = 4'b0101; b = 4'b0011; opcode = 3'b000; #10; // Addition (5 + 3 = 8)
+        a = 4'b0111; b = 4'b0010; opcode = 3'b001; #10; // Subtraction (7 - 2 = 5)
+        a = 4'b1100; b = 4'b1010; opcode = 3'b010; #10; // AND (1100 & 1010)
+        a = 4'b1100; b = 4'b1010; opcode = 3'b011; #10; // OR (1100 | 1010)
+        a = 4'b1100; b = 4'b1010; opcode = 3'b100; #10; // XOR (1100 ^ 1010)
+        a = 4'b1100;              opcode = 3'b101; #10; // NOT (~1100)
+        a = 4'b0101;              opcode = 3'b110; #10; // Shift Left (0101 << 1)
+        a = 4'b0101;              opcode = 3'b111; #10; // Shift Right (0101 >> 1)
+
+        $finish;
+    end
+
+endmodule
+
